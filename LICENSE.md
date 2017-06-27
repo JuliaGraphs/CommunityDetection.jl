@@ -1,6 +1,6 @@
 The CommunityDetection.jl package is licensed under the MIT "Expat" License:
 
-> Copyright (c) 2017: Seth Bromberger.
+> Copyright (c) 2017: Seth Bromberger and others.
 > 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
