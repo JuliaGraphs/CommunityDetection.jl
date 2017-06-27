@@ -5,4 +5,4 @@
 
 ### CommunityDetection.jl 
 
-Implements community detection for LightGraphs. Both Nonbacktracking and Bethe Hessian detection are supported.
+Implements community detection for [LightGraphs.jl](https://github.com/JuliaGraphs/LightGraphs.jl). Both Nonbacktracking and Bethe Hessian detection are supported.
