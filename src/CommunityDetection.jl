@@ -1,7 +1,8 @@
-__precompile__(true)
 module CommunityDetection
 using LightGraphs
-import Clustering: kmeans
+using ArnoldiMethod: LR, SR
+using LinearAlgebra: I, Diagonal
+using Clustering: kmeans
 
 export community_detection_nback, community_detection_bethe
 
@@ -19,7 +20,9 @@ non-backtracking matrix of `g`.
 function community_detection_nback(g::AbstractGraph, k::Int)
     #TODO insert check on connected_components
     ϕ = real(nonbacktrack_embedding(g, k))
-    if k==2
+    if k == 1
+        c = fill(1, nv(g))
+    elseif k==2
         c = community_detection_threshold(g, ϕ[1,:])
     else
         c = kmeans(ϕ, k).assignments
@@ -54,8 +57,8 @@ See `Nonbacktracking` for details.
 """
 function nonbacktrack_embedding(g::AbstractGraph, k::Int)
     B = Nonbacktracking(g)
-    λ, eigv, conv = eigs(B, nev=k+1, v0=ones(Float64, B.m))
-    ϕ = zeros(Complex64, nv(g), k-1)
+    λ, eigv = LightGraphs.LinAlg.eigs(B, nev=k+1, which=LR())
+    ϕ = zeros(ComplexF32, nv(g), k-1)
     # TODO decide what to do with the stationary distribution ϕ[:,1]
     # this code just throws it away in favor of eigv[:,2:k+1].
     # we might also use the degree distribution to scale these vectors as is
@@ -84,19 +87,23 @@ Return a vector containing the vertex assignments.
 """
 function community_detection_bethe(g::AbstractGraph, k::Int=-1; kmax::Int=15)
     A = adjacency_matrix(g)
-    D = diagm(degree(g))
+    D = Diagonal(degree(g))
     r = (sum(degree(g)) / nv(g))^0.5
 
-    Hr = (r^2-1)*eye(nv(g))-r*A+D;
-    # Hmr = (r^2-1)*eye(nv(g))+r*A+D;
+    Hr = Matrix((r^2-1)*I, nv(g), nv(g)) - r*A + D;
+    #Hmr = Matrix((r^2-1)*I, nv(g), nv(g)) + r*A + D;
     k >= 1 && (kmax = k)
-    λ, eigv = eigs(Hr, which=:SR, nev=min(kmax, nv(g)))
-    q = findlast(x -> x<0, λ)
-    k > q && warn("Using eigenvectors with positive eigenvalues,
+    λ, eigv = LightGraphs.LinAlg.eigs(Hr, which=SR(), nev=min(kmax, nv(g)))
+
+    # TODO eps() is chosen quite arbitrarily here, because some of eigenvalues
+    # don't convert exactly to zero as they should. Some analysis could show
+    # what threshold should be used instead
+    q = something(findlast(x -> (x < -eps()), λ), 0)
+    k > q && @warn("Using eigenvectors with positive eigenvalues,
                     some communities could be meaningless. Try to reduce `k`.")
     k < 1 && (k = q)
-    k < 1 && return fill(1, nv(g))
-    labels = kmeans(eigv[:,2:k]', k).assignments
+    k <= 1 && return fill(1, nv(g))
+    labels = kmeans(collect(transpose(eigv[:,2:k])), k).assignments
     return labels
 end
 

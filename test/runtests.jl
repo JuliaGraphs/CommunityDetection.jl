@@ -1,6 +1,9 @@
 using CommunityDetection
 using LightGraphs
-using Base.Test
+using LinearAlgebra: I, norm
+using ArnoldiMethod: LR
+using SparseArrays: sparse
+using Test
 
 """ Spectral embedding of the non-backtracking matrix of `g`
 (see [Krzakala et al.](http://www.pnas.org/content/110/52/20935.short)).
@@ -12,8 +15,8 @@ return : a matrix ϕ where ϕ[:,i] are the coordinates for vertex i.
 """
 function nonbacktrack_embedding_dense(g::AbstractGraph, k::Int)
     B, edgeid = non_backtracking_matrix(g)
-    λ,eigv,conv = eigs(B, nev=k+1, v0=ones(Float64, size(B,1)))
-    ϕ = zeros(Complex64, k-1, nv(g))
+    λ, eigv = LightGraphs.LinAlg.eigs(B, nev=k+1, which=LR())
+    ϕ = zeros(ComplexF32, k-1, nv(g))
     # TODO decide what to do with the stationary distribution ϕ[:,1]
     # this code just throws it away in favor of eigv[:,2:k+1].
     # we might also use the degree distribution to scale these vectors as is
@@ -29,6 +32,8 @@ function nonbacktrack_embedding_dense(g::AbstractGraph, k::Int)
     end
     return ϕ
 end
+
+@testset "CommunityDetection" begin
 
 n = 10; k = 5
 pg = PathGraph(n)
@@ -46,7 +51,7 @@ z = B * x
 @test norm(y-z) < 1e-8
 
 #check that matmat works and full(nbt) == B
-@test norm(nbt*eye(nbt.m) - B) < 1e-8
+@test norm(nbt*Matrix{Float64}(I, nbt.m, nbt.m) - B) < 1e-8
 
 #check that we can use the implicit matvec in nonbacktrack_embedding
 @test size(y) == size(x)
@@ -54,40 +59,64 @@ z = B * x
 @test size(ϕ2) == size(ϕ1)
 
 #check that this recovers communities in the path of cliques
-n=10
-g10 = CompleteGraph(n)
-z = copy(g10)
-for k=2:5
-    z = blkdiag(z, g10)
-    add_edge!(z, (k-1)*n, k*n)
+@testset "community_detection_nback(z, k)" begin
+    n=10
+    g10 = CompleteGraph(n)
+    z = copy(g10)
+    for k=2:5
+        z = blockdiag(z, g10)
+        add_edge!(z, (k-1)*n, k*n)
 
-    c = community_detection_nback(z, k)
-    @test sort(union(c)) == [1:k;]
-    a = collect(n:n:k*n)
-    @test length(c[a]) == length(unique(c[a]))
-    for i=1:k
-        for j=(i-1)*n+1:i*n
-            @test c[j] == c[i*n]
+        c = community_detection_nback(z, k)
+        @test sort(union(c)) == [1:k;]
+        a = collect(n:n:k*n)
+        @test length(c[a]) == length(unique(c[a]))
+        for i=1:k
+            cluster_range = (1:n) .+ (i-1)*n
+            @test length(unique(c[cluster_range])) == 1
         end
     end
+end
 
-    c = community_detection_bethe(z, k)
-    @test sort(union(c)) == [1:k;]
-    a = collect(n:n:k*n)
-    @test length(c[a]) == length(unique(c[a]))
-    for i=1:k
-        for j=(i-1)*n+1:i*n
-            @test c[j] == c[i*n]
+@testset "community_detection_bethe(z, k)" begin
+    n=10
+    g10 = CompleteGraph(n)
+    z = copy(g10)
+    for k=2:5
+        z = blockdiag(z, g10)
+        add_edge!(z, (k-1)*n, k*n)
+
+        c = community_detection_bethe(z, k)
+        @test sort(union(c)) == [1:k;]
+        a = collect(n:n:k*n)
+        @test length(c[a]) == length(unique(c[a]))
+
+        for i=1:k
+            cluster_range = (1:n) .+ (i-1)*n
+            @test length(unique(c[cluster_range])) == 1
+        end
+
+    end
+end
+
+@testset "community_detection_bethe(z)" begin
+    n=10
+    g10 = CompleteGraph(n)
+    z = copy(g10)
+    for k=2:5
+        z = blockdiag(z, g10)
+        add_edge!(z, (k-1)*n, k*n)
+
+        c = community_detection_bethe(z)
+        @test sort(union(c)) == [1:k;]
+        a = collect(n:n:k*n)
+        @test length(c[a]) == length(unique(c[a]))
+
+        for i=1:k
+            cluster_range = (1:n) .+ (i-1)*n
+            @test length(unique(c[cluster_range])) == 1
         end
     end
+end
 
-    c = community_detection_bethe(z)
-    @test sort(union(c)) == [1:k;]
-    a = collect(n:n:k*n)
-    @test length(c[a]) == length(unique(c[a]))
-    for i=1:k
-        for j=(i-1)*n+1:i*n
-            @test c[j] == c[i*n]
-        end
-    end
 end
