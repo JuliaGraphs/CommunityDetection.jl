@@ -119,4 +119,23 @@ end
     end
 end
 
+@testset "community_detection_louvain(z)" begin
+    n=10
+    g10 = CompleteGraph(n)
+    z = copy(g10)
+    for k=2:5
+        z = blockdiag(z, g10)
+        add_edge!(z, (k-1)*n, k*n)
+
+        c = community_detection_louvain(z)
+        @test sort(union(c)) == [1:k;]
+        a = collect(n:n:k*n)
+        @test length(c[a]) == length(unique(c[a]))
+        for i=1:k
+            cluster_range = (1:n) .+ (i-1)*n
+            @test length(unique(c[cluster_range])) == 1
+        end
+    end
+end
+
 end
