@@ -6,7 +6,6 @@ using Clustering: kmeans
 using SparseArrays
 using SimpleWeightedGraphs
 
-export community_detection_nback, community_detection_bethe
 export community_detection_nback, community_detection_bethe, community_detection_louvain
 
 """
