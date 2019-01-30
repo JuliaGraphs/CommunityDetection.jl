@@ -118,7 +118,7 @@ to make progress.  Return a vector containing the vertex assignments.
 ### References
 - [Blondel et al.](https://iopscience.iop.org/article/10.1088/1742-5468/2008/10/P10008/meta)
 """
-function community_detection_louvain(g::AbstractGraph;tol = 1e-6)
+function community_detection_louvain(g::AbstractGraph;tol::Float64 = 1e-6)
     graph = WGraph(copy(g))   # Create a weighted graph
     comms = collect(1:nv(g))  # Assume at first that each vertex is a community
 
@@ -161,7 +161,7 @@ function community_detection_louvain(g::AbstractGraph;tol = 1e-6)
     return labels
 end
 
-function louvain_make_pass(graph::AbstractGraph,communities::Vector{Int64},tol::Float64)
+function louvain_make_pass(graph::AbstractGraph,communities::Vector{Int},tol::Float64)
     comm_list = copy(communities)
     current_modularity = modularity(graph,comm_list)
     made_progress = true
@@ -211,7 +211,7 @@ function louvain_make_pass(graph::AbstractGraph,communities::Vector{Int64},tol::
 end
 
 #Aggregate matrix communities.
-function louvain_aggregate_communities(graph::AbstractGraph,comms)
+function louvain_aggregate_communities(graph::AbstractGraph,comms::Vector{Int})
     #Renumber communities starting from 1
     scomms = sort(unique(comms))
     comm_map = Dict(zip(scomms,collect(1:length(scomms))))
