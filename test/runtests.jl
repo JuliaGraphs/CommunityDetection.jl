@@ -36,7 +36,7 @@ end
 @testset "CommunityDetection" begin
 
 n = 10; k = 5
-pg = PathGraph(n)
+pg = path_graph(n)
 ϕ1 = CommunityDetection.nonbacktrack_embedding(pg, k)'
 
 nbt = Nonbacktracking(pg)
@@ -61,7 +61,7 @@ z = B * x
 #check that this recovers communities in the path of cliques
 @testset "community_detection_nback(z, k)" begin
     n=10
-    g10 = CompleteGraph(n)
+    g10 = complete_graph(n)
     z = copy(g10)
     for k=2:5
         z = blockdiag(z, g10)
@@ -80,7 +80,7 @@ end
 
 @testset "community_detection_bethe(z, k)" begin
     n=10
-    g10 = CompleteGraph(n)
+    g10 = complete_graph(n)
     z = copy(g10)
     for k=2:5
         z = blockdiag(z, g10)
@@ -101,7 +101,7 @@ end
 
 @testset "community_detection_bethe(z)" begin
     n=10
-    g10 = CompleteGraph(n)
+    g10 = complete_graph(n)
     z = copy(g10)
     for k=2:5
         z = blockdiag(z, g10)
