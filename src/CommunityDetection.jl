@@ -163,7 +163,7 @@ function louvain_make_pass!(graph::AbstractGraph, comms::Vector{Int}, tol::Real)
     nb_moves = 0  # number of moves
     while made_progress
         best_gain = 0.0
-        for i in 1:nv(graph)
+        for i in shuffle(1:nv(graph))
             current_comm = comms[i]
             improvement = false
             best_gain = 0.0
@@ -208,7 +208,7 @@ function louvain_make_pass!(graph::AbstractGraph, comms::Vector{Int}, tol::Real)
 
         # check whether the algorithm is making progress for this pass
         improvement = nb_moves > 0
-        made_progress = improvement && best_gain/2.0/W > tol
+        made_progress = improvement && 2best_gain/W > tol
     end
     return improvement
 end
