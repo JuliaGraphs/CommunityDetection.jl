@@ -217,16 +217,22 @@ end
 #Aggregate matrix communities.
 function louvain_aggregate_communities!(graph::AbstractGraph,comms::Vector{Int})
     #Renumber communities starting from 1
-    scomms = sort(unique(comms))
-    comm_map = Dict(zip(scomms,collect(1:length(scomms))))
-    for i = 1:length(comms)
-        comms[i] = comm_map[comms[i]]
+    label_counters = zero(comms)
+    j = 1
+    for i in eachindex(comms)
+        if label_counters[comms[i]] == 0
+            label_counters[comms[i]] = j
+            comms[i] = j
+            j += 1
+        else
+            comms[i] = label_counters[comms[i]]
+        end
     end
 
     #Create a group identify matrix and aggregate into larger communities
     n = nv(graph)
     A = graph.weights
-    G = sparse(1:n, comms, ones(Int,n))
+    G = sparse(1:n, comms, ones(n))
     Anew = G'*A*G  #New weighted adjacency matrix
     return Anew
 end
