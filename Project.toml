@@ -1,0 +1,15 @@
+name = "CommunityDetection"
+uuid = "d427f087-d71a-5a1b-ace0-b93392eea9ff"
+version = "0.2.0"
+
+[deps]
+ArnoldiMethod = "ec485272-7323-5ecc-a04f-4719b315124d"
+Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
+[compat]
+ArnoldiMethod = "0.2"
+Clustering = "0.14"
+Graphs = "1.4"
+julia = "1"

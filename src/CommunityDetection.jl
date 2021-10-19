@@ -1,5 +1,5 @@
 module CommunityDetection
-using LightGraphs
+using Graphs
 using ArnoldiMethod: LR, SR
 using LinearAlgebra: I, Diagonal
 using Clustering: kmeans
@@ -57,7 +57,7 @@ See `Nonbacktracking` for details.
 """
 function nonbacktrack_embedding(g::AbstractGraph, k::Int)
     B = Nonbacktracking(g)
-    λ, eigv = LightGraphs.LinAlg.eigs(B, nev=k+1, which=LR())
+    λ, eigv = Graphs.LinAlg.eigs(B, nev=k+1, which=LR())
     ϕ = zeros(ComplexF32, nv(g), k-1)
     # TODO decide what to do with the stationary distribution ϕ[:,1]
     # this code just throws it away in favor of eigv[:,2:k+1].
@@ -93,7 +93,7 @@ function community_detection_bethe(g::AbstractGraph, k::Int=-1; kmax::Int=15)
     Hr = Matrix((r^2-1)*I, nv(g), nv(g)) - r*A + D;
     #Hmr = Matrix((r^2-1)*I, nv(g), nv(g)) + r*A + D;
     k >= 1 && (kmax = k)
-    λ, eigv = LightGraphs.LinAlg.eigs(Hr, which=SR(), nev=min(kmax, nv(g)))
+    λ, eigv = Graphs.LinAlg.eigs(Hr, which=SR(), nev=min(kmax, nv(g)))
 
     # TODO eps() is chosen quite arbitrarily here, because some of eigenvalues
     # don't convert exactly to zero as they should. Some analysis could show

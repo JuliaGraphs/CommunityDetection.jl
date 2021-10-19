@@ -1,5 +1,5 @@
 using CommunityDetection
-using LightGraphs
+using Graphs
 using LinearAlgebra: I, norm
 using ArnoldiMethod: LR
 using SparseArrays: sparse
@@ -15,7 +15,7 @@ return : a matrix ϕ where ϕ[:,i] are the coordinates for vertex i.
 """
 function nonbacktrack_embedding_dense(g::AbstractGraph, k::Int)
     B, edgeid = non_backtracking_matrix(g)
-    λ, eigv = LightGraphs.LinAlg.eigs(B, nev=k+1, which=LR())
+    λ, eigv = Graphs.LinAlg.eigs(B, nev=k+1, which=LR())
     ϕ = zeros(ComplexF32, k-1, nv(g))
     # TODO decide what to do with the stationary distribution ϕ[:,1]
     # this code just throws it away in favor of eigv[:,2:k+1].
