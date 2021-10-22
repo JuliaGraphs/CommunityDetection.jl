@@ -1,7 +1,7 @@
 name = "CommunityDetection"
 uuid = "d427f087-d71a-5a1b-ace0-b93392eea9ff"
 authors = ["JuliaGraphs"]
-version = "0.3.0"
+version = "0.2.0"
 
 [deps]
 ArnoldiMethod = "ec485272-7323-5ecc-a04f-4719b315124d"
